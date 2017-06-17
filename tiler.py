@@ -8,7 +8,6 @@ import shutil
 
 import re
 
-import openslide
 import time
 from openslide import open_slide, ImageSlide
 from openslide.deepzoom import DeepZoomGenerator
@@ -158,38 +157,6 @@ class WholeSlideTiler(object):
             base = self._slugify(associated)
         return '%s.dzi' % base
 
-    def _write_html(self):
-        import jinja2
-        env = jinja2.Environment(loader=jinja2.PackageLoader(__name__),
-                                 autoescape=True)
-        template = env.get_template('slide-multipane.html')
-        associated_urls = dict((n, self._url_for(n))
-                               for n in self._slide.associated_images)
-        try:
-            mpp_x = self._slide.properties[openslide.PROPERTY_NAME_MPP_X]
-            mpp_y = self._slide.properties[openslide.PROPERTY_NAME_MPP_Y]
-            mpp = (float(mpp_x) + float(mpp_y)) / 2
-        except (KeyError, ValueError):
-            mpp = 0
-        # Embed the dzi metadata in the HTML to work around Chrome's
-        # refusal to allow XmlHttpRequest from file:///, even when
-        # the originating page is also a file:///
-        data = template.render(slide_url=self._url_for(None),
-                               slide_mpp=mpp,
-                               associated=associated_urls,
-                               properties=self._slide.properties,
-                               dzi_data=json.dumps(self._dzi_data))
-        with open(os.path.join(self._basepath, 'index.html'), 'w') as fh:
-            fh.write(data)
-
-    def _write_static(self):
-        basesrc = os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                               'static')
-        basedst = os.path.join(self._basepath, 'static')
-        self._copydir(basesrc, basedst)
-        self._copydir(os.path.join(basesrc, 'images'),
-                      os.path.join(basedst, 'images'))
-
     @staticmethod
     def _copydir(src, dest):
         if not os.path.exists(dest):
@@ -208,4 +175,3 @@ class WholeSlideTiler(object):
         for _i in range(self._nworkers):
             self._queue.put(None)
         self._queue.join()
-
