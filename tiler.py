@@ -59,7 +59,7 @@ class TileWorker(Process):
 class SingleImageTiler(object):
     """Handles generation of tiles and metadata for a single image."""
 
-    def __init__(self, dz, basename, img_format, associated, queue):
+    def __init__(self, dz, basename, img_format, associated, queue, only_last=True):
         self._dz = dz
         self._basename = basename
         self._img_format = img_format
@@ -67,6 +67,7 @@ class SingleImageTiler(object):
         self._img_name = associated if associated else cfg.DEFAULT_FILENAME
         self._queue = queue
         self._processed = 0
+        self._only_last = only_last
 
     def run(self):
         t = time.perf_counter()
@@ -76,7 +77,12 @@ class SingleImageTiler(object):
         cfg.ver_print("Tiling completed on {0} in: ".format(self._img_name), elapsed_time)
 
     def _write_tiles(self):
-        for level in range(self._dz.level_count):
+        if self._only_last:
+            iterator = [self._dz.level_count - 1]
+        else:
+            iterator = range(self._dz.level_count)
+
+        for level in iterator:
             tiledir = os.path.join(self._basename, self._img_name, str(level))
             if not os.path.exists(tiledir):
                 os.makedirs(tiledir)
@@ -112,7 +118,7 @@ class WholeSlideTiler(object):
     """Handles generation of tiles and metadata for all images in a slide."""
 
     def __init__(self, slide_path, basepath, img_format, tile_size, overlap,
-                 limit_bounds, quality, nworkers):
+                 limit_bounds, quality, nworkers, only_last):
 
         self._slide = open_slide(slide_path)  # the whole slide image
         self._basepath = basepath  # baseline name of each tiled image
@@ -122,6 +128,7 @@ class WholeSlideTiler(object):
         self._limit_bounds = limit_bounds  # ??
         self._queue = JoinableQueue(2 * nworkers)  # setup multiprocessing worker queues.
         self._nworkers = nworkers  # number of workers
+        self._only_last = only_last
         self._dzi_data = {}
         for _i in range(nworkers):
             TileWorker(self._queue, slide_path, tile_size, overlap,
@@ -146,7 +153,7 @@ class WholeSlideTiler(object):
 
         dz = DeepZoomGenerator(image, self._tile_size, self._overlap, self._limit_bounds)
         tiler = SingleImageTiler(dz, basepath, self._img_format, associated,
-                                 self._queue)
+                                 self._queue, self._only_last)
         tiler.run()
         self._dzi_data[self._url_for(associated)] = tiler.get_dzi()
 

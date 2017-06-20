@@ -13,7 +13,7 @@ def main():
         basename = os.path.splitext(os.path.basename(slidepath))[0]
         basepath = os.path.join(cfg.OUTPUT_FOLDER_PATH, basename)
         WholeSlideTiler(slidepath, basepath, cfg.IMG_FORMAT, cfg.TILE_SIZE, cfg.OVERLAP, cfg.LIMIT_BOUNDS, cfg.QUALITY,
-                        cfg.NUM_WORKERS).run()
+                        cfg.NUM_WORKERS, cfg.ONLY_LAST).run()
 
 
 if __name__ == '__main__':
