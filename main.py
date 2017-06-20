@@ -1,6 +1,5 @@
 import glob
 import os
-from optparse import OptionParser
 
 import config as cfg
 from tiler import WholeSlideTiler
@@ -17,7 +16,7 @@ def main():
         basepath = os.path.join(cfg.OUTPUT_FOLDER_PATH, basename)
         WholeSlideTiler(slidepath, basepath, cfg.IMG_FORMAT, cfg.TILE_SIZE, cfg.OVERLAP, cfg.LIMIT_BOUNDS, cfg.QUALITY,
                         cfg.NUM_WORKERS, cfg.ONLY_LAST).run()
-        i+=1
+        i += 1
 
 
 if __name__ == '__main__':
