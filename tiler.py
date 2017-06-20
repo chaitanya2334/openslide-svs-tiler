@@ -98,7 +98,12 @@ class SingleImageTiler(object):
 
     def _tile_done(self):
         self._processed += 1
-        count, total = self._processed, self._dz.tile_count
+        if self._only_last:
+            total = len(self._dz.level_tiles[self._dz.level_count - 1])
+        else:
+            total = self._dz.tile_count
+
+        count = self._processed
         if count % 100 == 0 or count == total:
             print("\rTiling %s: wrote %d/%d tiles" % (
                 self._associated or 'slide', count, total),
@@ -152,6 +157,7 @@ class WholeSlideTiler(object):
             basepath = os.path.join(self._basepath, self._slugify(associated))
 
         dz = DeepZoomGenerator(image, self._tile_size, self._overlap, self._limit_bounds)
+
         tiler = SingleImageTiler(dz, basepath, self._img_format, associated,
                                  self._queue, self._only_last)
         tiler.run()
