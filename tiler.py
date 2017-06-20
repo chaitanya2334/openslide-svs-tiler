@@ -99,7 +99,8 @@ class SingleImageTiler(object):
     def _tile_done(self):
         self._processed += 1
         if self._only_last:
-            total = len(self._dz.level_tiles[self._dz.level_count - 1])
+            ncols, nrows = self._dz.level_tiles[self._dz.level_count - 1]
+            total = ncols * nrows
         else:
             total = self._dz.tile_count
 
