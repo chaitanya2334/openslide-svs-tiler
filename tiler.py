@@ -12,6 +12,7 @@ import time
 from openslide import open_slide, ImageSlide
 from openslide.deepzoom import DeepZoomGenerator
 import config as cfg
+import numpy as np
 
 
 class TileWorker(Process):
@@ -44,7 +45,8 @@ class TileWorker(Process):
                 dz = self._get_dz(associated)
                 last_associated = associated
             tile = dz.get_tile(level, address)
-            tile.save(outfile, quality=self._quality)
+            if self._is_good(tile):
+                tile.save(outfile, quality=self._quality)
             self._queue.task_done()
 
     def _get_dz(self, associated=None):
@@ -54,7 +56,10 @@ class TileWorker(Process):
             image = self._slide
         return DeepZoomGenerator(image, self._tile_size, self._overlap,
                                  limit_bounds=self._limit_bounds)
-
+    def _is_good(self, tile):
+        # tile is PIL.image
+        imarr = np.asarray(tile)
+        return imarr.mean() < cfg.MAX_MEAN
 
 class SingleImageTiler(object):
     """Handles generation of tiles and metadata for a single image."""
