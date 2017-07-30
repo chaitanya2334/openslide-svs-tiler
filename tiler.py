@@ -1,4 +1,6 @@
+import heapq
 import os
+from operator import itemgetter
 from unicodedata import normalize
 from multiprocessing import Process, JoinableQueue
 
@@ -9,6 +11,10 @@ import shutil
 import re
 
 import time
+
+import PIL
+import cv2
+from PIL import Image
 from openslide import open_slide, ImageSlide
 from openslide.deepzoom import DeepZoomGenerator
 import config as cfg
@@ -18,7 +24,7 @@ import numpy as np
 class TileWorker(Process):
     """A child process that generates and writes tiles."""
 
-    def __init__(self, queue, slidepath, tile_size, overlap, limit_bounds,
+    def __init__(self, queue, slidepath, tile_size, overlap, limit_bounds, rotate,
                  quality):
         Process.__init__(self, name='TileWorker')
         self.daemon = True
@@ -28,6 +34,7 @@ class TileWorker(Process):
         self._overlap = overlap
         self._limit_bounds = limit_bounds
         self._quality = quality
+        self._rotate = rotate
         self._slide = None
 
     def run(self):
@@ -40,14 +47,28 @@ class TileWorker(Process):
                 self._queue.task_done()
                 break
 
-            associated, level, address, outfile = data
+            associated, level, address, outfile, rejfile = data
             if last_associated != associated:
                 dz = self._get_dz(associated)
                 last_associated = associated
+
             tile = dz.get_tile(level, address)
             if self._is_good(tile):
-                tile.save(outfile, quality=self._quality)
+                tile.save(outfile[:-5] + "_" + str(1) + outfile[-5:], quality=self._quality)
+
+                if self._rotate:
+                    # 90 deg = 2, 180 deg = 3, 270 deg = 4
+                    for angle in [2, 3, 4]:
+                        self.rotate_and_save(tile, angle, outfile)
+
+            elif cfg.SAVE_REJECTED:
+                tile.save(rejfile, quality=self._quality)
+
             self._queue.task_done()
+
+    def rotate_and_save(self, tile, angle_type, savefile):
+
+        tile.transpose(angle_type).save(savefile[:-5] + "_" + str(angle_type) + savefile[-5:], quality=self._quality)
 
     def _get_dz(self, associated=None):
         if associated is not None:
@@ -56,10 +77,27 @@ class TileWorker(Process):
             image = self._slide
         return DeepZoomGenerator(image, self._tile_size, self._overlap,
                                  limit_bounds=self._limit_bounds)
+
     def _is_good(self, tile):
         # tile is PIL.image
-        imarr = np.asarray(tile)
-        return imarr.mean() < cfg.MAX_MEAN
+
+        img = np.asarray(tile)
+
+        if img.shape[0] < self._tile_size + 2 * self._overlap or img.shape[1] < self._tile_size + 2 * self._overlap:
+            return False
+
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        blur = cv2.GaussianBlur(img, (5, 5), 0)
+        ret3, th3 = cv2.threshold(blur, cfg.REJECT_THRESHOLD, 255, cv2.THRESH_BINARY)
+        im2, contours, hierarchy = cv2.findContours(th3, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+
+        return self.get_cnt_sum(contours, 2) < cfg.MAX_WHITE_SIZE
+
+    def get_cnt_sum(self, contours, topn):
+        res = 0
+        cnts = sorted(contours, key=lambda x: cv2.contourArea(x))[-topn:]
+        return sum([cv2.contourArea(cnt) for cnt in cnts])
+
 
 class SingleImageTiler(object):
     """Handles generation of tiles and metadata for a single image."""
@@ -89,15 +127,20 @@ class SingleImageTiler(object):
 
         for level in iterator:
             tiledir = os.path.join(self._basename, self._img_name, str(level))
+            rejpath = os.path.join(self._basename, self._img_name, str(level), "rejected")
             if not os.path.exists(tiledir):
                 os.makedirs(tiledir)
+
+            if not os.path.exists(rejpath) and cfg.SAVE_REJECTED:
+                os.makedirs(rejpath)
 
             cols, rows = self._dz.level_tiles[level]
             for row in range(rows):
                 for col in range(cols):
                     tilename = os.path.join(tiledir, '%d_%d.%s' % (col, row, self._img_format))
+                    rejfile = os.path.join(rejpath, '%d_%d.%s' % (col, row, self._img_format))
                     if not os.path.exists(tilename):
-                        self._queue.put((self._associated, level, (col, row), tilename))
+                        self._queue.put((self._associated, level, (col, row), tilename, rejfile))
 
                     self._tile_done()
 
@@ -129,7 +172,7 @@ class WholeSlideTiler(object):
     """Handles generation of tiles and metadata for all images in a slide."""
 
     def __init__(self, slide_path, basepath, img_format, tile_size, overlap,
-                 limit_bounds, quality, nworkers, only_last):
+                 limit_bounds, rotate, quality, nworkers, only_last):
 
         self._slide = open_slide(slide_path)  # the whole slide image
         self._basepath = basepath  # baseline name of each tiled image
@@ -143,7 +186,7 @@ class WholeSlideTiler(object):
         self._dzi_data = {}
         for _i in range(nworkers):
             TileWorker(self._queue, slide_path, tile_size, overlap,
-                       limit_bounds, quality).start()
+                       limit_bounds, rotate, quality).start()
 
     def run(self):
         self._run_image()
