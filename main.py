@@ -7,7 +7,8 @@ from tiler import WholeSlideTiler
 
 def main():
     # open input_path, and process each wholeslide image
-    files = glob.glob(cfg.IMAGE_FOLDER_PATH + '*.svs')
+    files = glob.glob(cfg.IMAGE_FOLDER_PATH + '/*.svs')
+    print(len(files))
     i = 1
     for slidepath in files:
         print("processing {0} of {1} whole slide images".format(i, len(files)))
