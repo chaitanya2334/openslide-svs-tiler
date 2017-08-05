@@ -13,9 +13,9 @@ LEIDOS_PATH = os.path.join(CURRENT_DIR, "../leidos_output/output_features/")
 
 IMG_FORMAT = 'jpeg'
 
-TILE_SIZE = 149
+TILE_SIZE = 299
 
-OVERLAP = 75
+OVERLAP = 0
 
 LIMIT_BOUNDS = True
 
@@ -25,12 +25,12 @@ NUM_WORKERS = 24
 
 ONLY_LAST = True
 
-SAVE_REJECTED = False
+SAVE_REJECTED = True
 
 # increase this to reject more
 REJECT_THRESHOLD = 200
 
-ROTATE = True
+ROTATE = False
 
 MAX_WHITE_SIZE = (TILE_SIZE*TILE_SIZE)/2
 
