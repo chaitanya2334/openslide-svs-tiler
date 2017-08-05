@@ -2,8 +2,6 @@ import glob
 import os
 from collections import namedtuple
 
-from tabulate import tabulate
-
 import config as cfg
 
 import re
