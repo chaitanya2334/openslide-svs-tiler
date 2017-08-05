@@ -2,7 +2,10 @@ import glob
 import os
 
 import config as cfg
+from epi import gen_epi_addrs
 from tiler import WholeSlideTiler
+
+
 
 
 def main():
@@ -15,7 +18,10 @@ def main():
         print(slidepath)
         basename = os.path.splitext(os.path.basename(slidepath))[0]
         basepath = os.path.join(cfg.OUTPUT_FOLDER_PATH, basename)
-        WholeSlideTiler(slidepath, basepath, cfg.IMG_FORMAT, cfg.TILE_SIZE, cfg.OVERLAP, cfg.LIMIT_BOUNDS, cfg.ROTATE, cfg.QUALITY,
+
+        epi_addrs = gen_epi_addrs(basename, cfg.LEIDOS_PATH)
+
+        WholeSlideTiler(slidepath, basepath, epi_addrs, cfg.IMG_FORMAT, cfg.TILE_SIZE, cfg.OVERLAP, cfg.LIMIT_BOUNDS, cfg.ROTATE, cfg.QUALITY,
                         cfg.NUM_WORKERS, cfg.ONLY_LAST).run()
         i += 1
 

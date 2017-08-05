@@ -7,7 +7,9 @@ DEFAULT_FILENAME = 'slide'
 
 IMAGE_FOLDER_PATH = os.path.join(CURRENT_DIR, "../Images/")
 
-OUTPUT_FOLDER_PATH = os.path.join(CURRENT_DIR, "/fs/scratch/osu1522/tiles_299_rotated/")
+OUTPUT_FOLDER_PATH = os.path.join(CURRENT_DIR, "/fs/scratch/osu1522/tiles_299_epi/")
+
+LEIDOS_PATH = os.path.join(CURRENT_DIR, "../leidos_output/output_features/")
 
 IMG_FORMAT = 'jpeg'
 
@@ -31,6 +33,10 @@ REJECT_THRESHOLD = 200
 ROTATE = True
 
 MAX_WHITE_SIZE = (TILE_SIZE*TILE_SIZE)/2
+
+LEIDOS_TILESIZE = 4096
+
+SIMPLE_THRESHOLDING = False
 
 def ver_print(string, value):
     print(string + " {0}".format(value))
