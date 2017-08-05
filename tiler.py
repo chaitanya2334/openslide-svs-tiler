@@ -20,14 +20,17 @@ from openslide.deepzoom import DeepZoomGenerator
 import config as cfg
 import numpy as np
 
+from epi import Epi_Address
+
 
 class TileWorker(Process):
     """A child process that generates and writes tiles."""
 
-    def __init__(self, queue, slidepath, tile_size, overlap, limit_bounds, rotate,
+    def __init__(self, queue, slidepath, epi_addrs, tile_size, overlap, limit_bounds, rotate,
                  quality):
         Process.__init__(self, name='TileWorker')
         self.daemon = True
+        self.epi_addrs = epi_addrs
         self._queue = queue
         self._slidepath = slidepath
         self._tile_size = tile_size
@@ -53,7 +56,7 @@ class TileWorker(Process):
                 last_associated = associated
 
             tile = dz.get_tile(level, address)
-            if self._is_good(tile):
+            if self._is_good(tile, address):
                 tile.save(outfile[:-5] + "_" + str(1) + outfile[-5:], quality=self._quality)
 
                 if self._rotate:
@@ -78,20 +81,45 @@ class TileWorker(Process):
         return DeepZoomGenerator(image, self._tile_size, self._overlap,
                                  limit_bounds=self._limit_bounds)
 
-    def _is_good(self, tile):
+    @staticmethod
+    def __is_bounded(a, b):
+        assert isinstance(a, Epi_Address)
+        assert isinstance(b, Epi_Address)
+
+        if a.x + a.w < b.x: return False  # a is left of b
+        if a.x > b.x + b.w: return False  # a is right of b
+        if a.y + a.h < b.y: return False  # a is above b
+        if a.y > b.y + b.h: return False  # a is below b
+        return True  # boxes overlap
+
+    def _is_good(self, tile, address):
         # tile is PIL.image
 
         img = np.asarray(tile)
 
+        # if tile is of variable size
         if img.shape[0] < self._tile_size + 2 * self._overlap or img.shape[1] < self._tile_size + 2 * self._overlap:
             return False
 
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        blur = cv2.GaussianBlur(img, (5, 5), 0)
-        ret3, th3 = cv2.threshold(blur, cfg.REJECT_THRESHOLD, 255, cv2.THRESH_BINARY)
-        im2, contours, hierarchy = cv2.findContours(th3, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
+        if cfg.SIMPLE_THRESHOLDING:
+            img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            blur = cv2.GaussianBlur(img, (5, 5), 0)
+            ret3, th3 = cv2.threshold(blur, cfg.REJECT_THRESHOLD, 255, cv2.THRESH_BINARY)
+            im2, contours, hierarchy = cv2.findContours(th3, cv2.RETR_LIST, cv2.CHAIN_APPROX_SIMPLE)
 
-        return self.get_cnt_sum(contours, 2) < cfg.MAX_WHITE_SIZE
+            return self.get_cnt_sum(contours, 2) < cfg.MAX_WHITE_SIZE
+        else:
+            x, y = address
+            true_x, true_y = x * self._tile_size, y * self._tile_size
+            w, h = self._tile_size, self._tile_size
+
+            tile_box = Epi_Address(true_x, true_y, w, h)
+
+            for epi_addr in self.epi_addrs:
+                if self.__is_bounded(tile_box, epi_addr):
+                    return True
+
+            return False
 
     def get_cnt_sum(self, contours, topn):
         res = 0
@@ -171,9 +199,10 @@ class SingleImageTiler(object):
 class WholeSlideTiler(object):
     """Handles generation of tiles and metadata for all images in a slide."""
 
-    def __init__(self, slide_path, basepath, img_format, tile_size, overlap,
+    def __init__(self, slide_path, basepath, epi_addrs, img_format, tile_size, overlap,
                  limit_bounds, rotate, quality, nworkers, only_last):
 
+        self.epi_addresses = epi_addrs
         self._slide = open_slide(slide_path)  # the whole slide image
         self._basepath = basepath  # baseline name of each tiled image
         self._img_format = img_format  # image format (jpeg or png)
@@ -185,7 +214,7 @@ class WholeSlideTiler(object):
         self._only_last = only_last
         self._dzi_data = {}
         for _i in range(nworkers):
-            TileWorker(self._queue, slide_path, tile_size, overlap,
+            TileWorker(self._queue, slide_path, epi_addrs, tile_size, overlap,
                        limit_bounds, rotate, quality).start()
 
     def run(self):
