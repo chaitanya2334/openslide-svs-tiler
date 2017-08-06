@@ -18,22 +18,25 @@ def extract_x_y(digits, tilesize):
             print(x, y)
             return x, y
 
+def is_non_zero_file(fpath):
+    return True if os.path.isfile(fpath) and os.path.getsize(fpath) > 0 else False
 
 def gen_epi_addrs(slidebasename, epi_path):
     base = os.path.join(epi_path, slidebasename)
     files = glob.glob(base + "*_Epi_Features.txt")
     ret = []
     for file in files:
-        digits = re.search(base + "(.*)" + "_Epi_Features\.txt", file)
-        x, y = extract_x_y(digits.group(1), cfg.LEIDOS_TILESIZE)
+        if is_non_zero_file(file):
+            digits = re.search(base + "(.*)" + "_Epi_Features\.txt", file)
+            x, y = extract_x_y(digits.group(1), cfg.LEIDOS_TILESIZE)
 
-        df = pd.read_csv(file, header=None, usecols=[0, 1, 4, 5])
-        for row in df.itertuples():
-            rel_x = row[1]
-            rel_y = row[2]
-            w = row[3]
-            h = row[4]
-            ret.append(Epi_Address(x + rel_x - w / 2, y + rel_y - h / 2, w, h))
+            df = pd.read_csv(file, header=None, usecols=[0, 1, 4, 5])
+            for row in df.itertuples():
+                rel_x = row[1]
+                rel_y = row[2]
+                w = row[3]
+                h = row[4]
+                ret.append(Epi_Address(x + rel_x - w / 2, y + rel_y - h / 2, w, h))
 
     return ret
 
