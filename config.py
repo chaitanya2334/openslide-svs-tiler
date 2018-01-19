@@ -5,9 +5,9 @@ CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 DEFAULT_FILENAME = 'slide'
 
-IMAGE_FOLDER_PATH = os.path.join(CURRENT_DIR, "../Images/")
+IMAGE_FOLDER_PATH = os.path.join(CURRENT_DIR, "input")
 
-OUTPUT_FOLDER_PATH = os.path.join(CURRENT_DIR, "/fs/scratch/osu1522/tiles_299_rotated/")
+OUTPUT_FOLDER_PATH = os.path.join(CURRENT_DIR, "output")
 
 IMG_FORMAT = 'jpeg'
 
@@ -24,6 +24,8 @@ NUM_WORKERS = 12
 ONLY_LAST = True
 
 SAVE_REJECTED = False
+
+DONT_REJECT = True
 
 # increase this to reject more
 REJECT_THRESHOLD = 200
