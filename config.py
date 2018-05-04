@@ -5,27 +5,27 @@ CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 DEFAULT_FILENAME = 'slide'
 
-IMAGE_FOLDER_PATH = os.path.join(CURRENT_DIR, "input")
+IMAGE_FOLDER_PATH = os.path.join(CURRENT_DIR, "input/chromophobe")
 
-OUTPUT_FOLDER_PATH = os.path.join(CURRENT_DIR, "output")
+OUTPUT_FOLDER_PATH = os.path.join(CURRENT_DIR, "output/chromophobe")
 
 IMG_FORMAT = 'jpeg'
 
-TILE_SIZE = 149
+TILE_SIZE = 149+64
 
-OVERLAP = 75
+OVERLAP = 75-32
 
 LIMIT_BOUNDS = True
 
 QUALITY = 100
 
-NUM_WORKERS = 12
+NUM_WORKERS = 4
 
 ONLY_LAST = True
 
 SAVE_REJECTED = False
 
-DONT_REJECT = True
+DONT_REJECT = False
 
 # increase this to reject more
 REJECT_THRESHOLD = 200
