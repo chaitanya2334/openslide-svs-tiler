@@ -5,17 +5,17 @@ CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 DEFAULT_FILENAME = 'slide'
 
-IMAGE_FOLDER_PATH = os.path.join(CURRENT_DIR, "../Images/")
+IMAGE_FOLDER_PATH = os.path.join(CURRENT_DIR, "../fs/scratch/osu1522/TCGA/wsi/")
 
-OUTPUT_FOLDER_PATH = os.path.join(CURRENT_DIR, "/fs/scratch/osu1522/tiles_299_epi/")
+OUTPUT_FOLDER_PATH = os.path.join(CURRENT_DIR, "/fs/scratch/osu1522/TCGA/tiled/")
 
 LEIDOS_PATH = os.path.join(CURRENT_DIR, "../leidos_output/output_features/")
 
-IMG_FORMAT = 'jpeg'
+IMG_FORMAT = 'png'
 
-TILE_SIZE = 299
+TILE_SIZE = 224
 
-OVERLAP = 0
+STRIDE = 75
 
 LIMIT_BOUNDS = True
 

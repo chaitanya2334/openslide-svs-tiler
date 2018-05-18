@@ -21,7 +21,7 @@ def main():
 
         epi_addrs = gen_epi_addrs(basename, cfg.LEIDOS_PATH)
 
-        WholeSlideTiler(slidepath, basepath, epi_addrs, cfg.IMG_FORMAT, cfg.TILE_SIZE, cfg.OVERLAP, cfg.LIMIT_BOUNDS, cfg.ROTATE, cfg.QUALITY,
+        WholeSlideTiler(slidepath, basepath, epi_addrs, cfg.IMG_FORMAT, cfg.TILE_SIZE, cfg.STRIDE, cfg.LIMIT_BOUNDS, cfg.ROTATE, cfg.QUALITY,
                         cfg.NUM_WORKERS, cfg.ONLY_LAST).run()
         i += 1
 

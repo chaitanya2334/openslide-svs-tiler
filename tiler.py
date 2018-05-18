@@ -199,22 +199,22 @@ class SingleImageTiler(object):
 class WholeSlideTiler(object):
     """Handles generation of tiles and metadata for all images in a slide."""
 
-    def __init__(self, slide_path, basepath, epi_addrs, img_format, tile_size, overlap,
+    def __init__(self, slide_path, basepath, epi_addrs, img_format, tile_size, stride,
                  limit_bounds, rotate, quality, nworkers, only_last):
 
         self.epi_addresses = epi_addrs
         self._slide = open_slide(slide_path)  # the whole slide image
         self._basepath = basepath  # baseline name of each tiled image
         self._img_format = img_format  # image format (jpeg or png)
-        self._tile_size = tile_size  # tile size. default: 256x256 pixels
-        self._overlap = overlap  # ??
+        self._tile_size = tile_size - 2 * stride # tile size. default: 256x256 pixels
+        self._overlap = stride  # ??
         self._limit_bounds = limit_bounds  # ??
         self._queue = JoinableQueue(2 * nworkers)  # setup multiprocessing worker queues.
         self._nworkers = nworkers  # number of workers
         self._only_last = only_last
         self._dzi_data = {}
         for _i in range(nworkers):
-            TileWorker(self._queue, slide_path, epi_addrs, tile_size, overlap,
+            TileWorker(self._queue, slide_path, epi_addrs, self._tile_size, self._overlap,
                        limit_bounds, rotate, quality).start()
 
     def run(self):
