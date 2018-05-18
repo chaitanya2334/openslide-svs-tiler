@@ -13,7 +13,7 @@ def main():
     for slidepath in tqdm(files):
         basename = os.path.splitext(os.path.basename(slidepath))[0]
         basepath = os.path.join(cfg.OUTPUT_FOLDER_PATH, basename)
-        WholeSlideTiler(slidepath, basepath, cfg.IMG_FORMAT, cfg.TILE_SIZE, cfg.OVERLAP, cfg.LIMIT_BOUNDS, cfg.ROTATE,
+        WholeSlideTiler(slidepath, basepath, cfg.IMG_FORMAT, cfg.TILE_SIZE, cfg.STRIDE, cfg.LIMIT_BOUNDS, cfg.ROTATE,
                         cfg.QUALITY, cfg.NUM_WORKERS, cfg.ONLY_LAST).run()
 
 
