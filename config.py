@@ -25,12 +25,14 @@ NUM_WORKERS = 24
 
 ONLY_LAST = True
 
-SAVE_REJECTED = True
+SAVE_REJECTED = False
+
+DONT_REJECT = False
 
 # increase this to reject more
 REJECT_THRESHOLD = 200
 
-ROTATE = False
+ROTATE = True
 
 MAX_WHITE_SIZE = (TILE_SIZE*TILE_SIZE)/2
 
