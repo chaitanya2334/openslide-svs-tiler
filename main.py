@@ -11,6 +11,8 @@ def setup_argparser():
     parser = ArgumentParser(description='Tiler')
     parser.add_argument('S', type=int,
                         help='an integer, to specify the Sth wsi from where to start tiling')
+    parser.add_argument('C', type=int,
+                        help='total number of wsi to process')
 
     args = parser.parse_args()
     return args
@@ -20,7 +22,7 @@ def main():
     args = setup_argparser()
     files = sorted(glob.glob(cfg.IMAGE_FOLDER_PATH + '/*.svs'))
     if args.S < len(files):
-        for slidepath in tqdm(files[args.S:]):
+        for slidepath in tqdm(files[args.S:args.S + args.C]):
             print("starting from: {0}".format(args.S))
             basename = os.path.splitext(os.path.basename(slidepath))[0]
             basepath = os.path.join(cfg.OUTPUT_FOLDER_PATH, basename)
