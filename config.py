@@ -5,9 +5,9 @@ CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 DEFAULT_FILENAME = 'slide'
 
-IMAGE_FOLDER_PATH = os.path.join(CURRENT_DIR, "../fs/scratch/osu1522/TCGA/wsi/")
+IMAGE_FOLDER_PATH = os.path.join(CURRENT_DIR, "../Images/")
 
-OUTPUT_FOLDER_PATH = os.path.join(CURRENT_DIR, "/fs/scratch/osu1522/TCGA/tiled/")
+OUTPUT_FOLDER_PATH = os.path.join(CURRENT_DIR, "/tiled")
 
 LEIDOS_PATH = os.path.join(CURRENT_DIR, "../leidos_output/output_features/")
 
@@ -21,7 +21,7 @@ LIMIT_BOUNDS = True
 
 QUALITY = 100
 
-NUM_WORKERS = 24
+NUM_WORKERS = 28
 
 ONLY_LAST = True
 

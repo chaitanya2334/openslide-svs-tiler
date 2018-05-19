@@ -68,8 +68,8 @@ class TileWorker(Process):
             self._queue.task_done()
 
     def rotate_and_save(self, tile, angle_type, savefile):
-
-        tile.transpose(angle_type).save(savefile[:-5] + "_" + str(angle_type) + savefile[-5:], quality=self._quality)
+        basename = os.path.splitext(savefile)
+        tile.transpose(angle_type).save(basename[0] + "_" + str(angle_type) + basename[1], quality=self._quality)
 
     def _get_dz(self, associated=None):
         if associated is not None:
