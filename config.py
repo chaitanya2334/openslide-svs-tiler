@@ -5,9 +5,9 @@ CURRENT_DIR = os.path.dirname(os.path.realpath(__file__))
 
 DEFAULT_FILENAME = 'slide'
 
-IMAGE_FOLDER_PATH = "/fs/scratch/osu1522/TCGA/wsi/"
+IMAGE_FOLDER_PATH = "/fs/scratch/osu1522/TCGA/subset_wsi/"
 
-OUTPUT_FOLDER_PATH = "/fs/scratch/osu1522/TCGA/tiled/"
+OUTPUT_FOLDER_PATH = "/fs/scratch/osu1522/TCGA/subset_tiled/"
 
 LEIDOS_PATH = os.path.join(CURRENT_DIR, "../leidos_output/output_features/")
 
