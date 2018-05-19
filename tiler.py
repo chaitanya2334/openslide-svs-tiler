@@ -55,7 +55,8 @@ class TileWorker(Process):
             tile = dz.get_tile(level, address)
 
             if cfg.DONT_REJECT or self._is_good(tile):
-                tile.save(outfile[:-5] + "_" + str(1) + outfile[-5:], quality=self._quality)
+                basename = os.path.splitext(outfile)
+                tile.save(basename[0] + "_" + str(1) + basename[1], quality=self._quality)
 
                 if self._rotate:
                     # 90 deg = 2, 180 deg = 3, 270 deg = 4
