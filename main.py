@@ -20,7 +20,7 @@ def main():
     args = setup_argparser()
     files = sorted(glob.glob(cfg.IMAGE_FOLDER_PATH + '/*.svs'))
     if args.S < len(files):
-        for slidepath in tqdm(files[:args.S]):
+        for slidepath in tqdm(files[args.S:]):
             print("starting from: {0}".format(args.S))
             basename = os.path.splitext(os.path.basename(slidepath))[0]
             basepath = os.path.join(cfg.OUTPUT_FOLDER_PATH, basename)
