@@ -15,7 +15,7 @@ IMG_FORMAT = 'png'
 
 TILE_SIZE = 224
 
-STRIDE = 100
+STRIDE = 0
 
 LIMIT_BOUNDS = True
 
