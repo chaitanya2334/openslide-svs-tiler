@@ -144,8 +144,9 @@ class SingleImageTiler(object):
             pbar = tqdm(total=cols*rows, desc="Tiling {0}".format(self._associated or 'slide'))
             for row in range(rows):
                 for col in range(cols):
-                    tilename = os.path.join(tiledir, '%d_%d.%s' % (col, row, self._img_format))
-                    rejfile = os.path.join(rejpath, '%d_%d.%s' % (col, row, self._img_format))
+                    x_pix, y_pix = self._dz.get_tile(level, (col, row))
+                    tilename = os.path.join(tiledir, '%d_%d.%s' % (x_pix, y_pix, self._img_format))
+                    rejfile = os.path.join(rejpath, '%d_%d.%s' % (x_pix, y_pix, self._img_format))
                     if not os.path.exists(tilename):
                         self._queue.put((self._associated, level, (col, row), tilename, rejfile))
 
