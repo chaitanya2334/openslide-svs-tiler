@@ -54,7 +54,7 @@ class TileWorker(Process):
 
             tile = dz.get_tile(level, address)
 
-            if cfg.DONT_REJECT or self._is_good(tile):
+            if not cfg.REJECT or self._is_good(tile):
                 basename = os.path.splitext(outfile)
                 tile.save(basename[0] + "_" + str(1) + basename[1], quality=self._quality)
 
