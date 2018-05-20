@@ -171,8 +171,8 @@ class WholeSlideTiler(object):
         self._slide = open_slide(slide_path)  # the whole slide image
         self._outpath = outpath  # baseline name of each tiled image
         self._img_format = img_format  # image format (jpeg or png)
-        self._tile_size = tile_size - 2 * stride # tile size. default: 256x256 pixels
-        self._overlap = stride
+        self._overlap = tile_size - stride
+        self._tile_size = tile_size - 2 * self._overlap  # tile size. default: 256x256 pixels
         self._limit_bounds = limit_bounds
         self._queue = JoinableQueue(2 * nworkers)  # setup multiprocessing worker queues.
         self._nworkers = nworkers  # number of workers
