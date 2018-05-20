@@ -17,6 +17,8 @@ import cv2
 from PIL import Image
 from openslide import open_slide, ImageSlide
 from openslide.deepzoom import DeepZoomGenerator
+from tqdm import tqdm
+
 import config as cfg
 import numpy as np
 
@@ -139,7 +141,7 @@ class SingleImageTiler(object):
                 os.makedirs(rejpath)
 
             cols, rows = self._dz.level_tiles[level]
-
+            pbar = tqdm(total=cols*rows, desc="Tiling {0}".format(self._associated or 'slide'))
             for row in range(rows):
                 for col in range(cols):
                     tilename = os.path.join(tiledir, '%d_%d.%s' % (col, row, self._img_format))
@@ -147,23 +149,9 @@ class SingleImageTiler(object):
                     if not os.path.exists(tilename):
                         self._queue.put((self._associated, level, (col, row), tilename, rejfile))
 
-                    self._tile_done()
+                    pbar.update()
 
-    def _tile_done(self):
-        self._processed += 1
-        if self._only_last:
-            ncols, nrows = self._dz.level_tiles[self._dz.level_count - 1]
-            total = ncols * nrows
-        else:
-            total = self._dz.tile_count
-
-        count = self._processed
-        if count % 100 == 0 or count == total:
-            print("\rTiling %s: wrote %d/%d tiles" % (
-                self._associated or 'slide', count, total),
-                  end='', file=sys.stderr)
-            if count == total:
-                print(file=sys.stderr)
+            pbar.close()
 
     def _write_dzi(self):
         with open('%s.dzi' % self._basename, 'w') as fh:
