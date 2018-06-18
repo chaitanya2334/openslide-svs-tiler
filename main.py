@@ -7,6 +7,7 @@ from tqdm import tqdm
 import config as cfg
 from tiler import WholeSlideTiler
 
+
 def setup_argparser():
     parser = ArgumentParser(description='Tiler')
     parser.add_argument('S', type=int,
@@ -16,6 +17,7 @@ def setup_argparser():
 
     args = parser.parse_args()
     return args
+
 
 def main():
     # open input_path, and process each wholeslide image
@@ -35,7 +37,8 @@ def main():
                             rotate=cfg.ROTATE,
                             quality=cfg.QUALITY,
                             nworkers=cfg.NUM_WORKERS,
-                            only_last=cfg.ONLY_LAST).run()
+                            only_last=cfg.ONLY_SECOND_LAST,
+                            run_all=cfg.RUN_ALL).run()
 
 
 if __name__ == '__main__':

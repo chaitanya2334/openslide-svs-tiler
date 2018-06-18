@@ -1,3 +1,4 @@
+import gc
 import heapq
 import os
 from operator import itemgetter
@@ -68,6 +69,7 @@ class TileWorker(Process):
             elif cfg.SAVE_REJECTED:
                 tile.save(rejfile, quality=self._quality)
 
+            gc.collect()
             self._queue.task_done()
 
     def rotate_and_save(self, tile, angle_type, savefile):
@@ -107,7 +109,7 @@ class TileWorker(Process):
 class SingleImageTiler(object):
     """Handles generation of tiles and metadata for a single image."""
 
-    def __init__(self, dz, basename, img_format, associated, queue, only_last=True):
+    def __init__(self, dz, basename, img_format, associated, queue, only_second_last=True):
         self._dz = dz
         self._basename = basename
         self._img_format = img_format
@@ -115,18 +117,18 @@ class SingleImageTiler(object):
         self._img_name = associated if associated else cfg.DEFAULT_FILENAME
         self._queue = queue
         self._processed = 0
-        self._only_last = only_last
+        self._only_second_last = only_second_last
 
     def run(self):
         t = time.perf_counter()
         self._write_tiles()
-        self._write_dzi()
+        # self._write_dzi()
         elapsed_time = time.perf_counter() - t
         cfg.ver_print("Tiling completed on {0} in: ".format(self._img_name), elapsed_time)
 
     def _write_tiles(self):
-        if self._only_last:
-            iterator = [self._dz.level_count - 1]
+        if self._only_second_last:
+            iterator = [self._dz.level_count - 2]
         else:
             iterator = range(self._dz.level_count)
 
@@ -141,11 +143,13 @@ class SingleImageTiler(object):
                 os.makedirs(rejpath)
 
             cols, rows = self._dz.level_tiles[level]
-            pbar = tqdm(total=cols*rows, desc="Tiling {0}".format(self._associated or 'slide'))
+            pbar = tqdm(total=cols*rows,
+                        desc="Tiling {0}, level {1}".
+                        format(os.path.basename(self._basename), level))
+
             for row in range(rows):
                 for col in range(cols):
                     location, l, s = self._dz.get_tile_coordinates(level, (col, row))
-                    print(location, l, s)
                     tilename = os.path.join(tiledir, '%d_%d.%s' % (location[0], location[1], self._img_format))
                     rejfile = os.path.join(rejpath, '%d_%d.%s' % (location[0], location[1], self._img_format))
                     if not os.path.exists(tilename):
@@ -167,7 +171,7 @@ class WholeSlideTiler(object):
     """Handles generation of tiles and metadata for all images in a slide."""
 
     def __init__(self, slide_path, outpath, img_format, tile_size, stride,
-                 limit_bounds, rotate, quality, nworkers, only_last):
+                 limit_bounds, rotate, quality, nworkers, only_last, run_all):
 
         self._slide = open_slide(slide_path)  # the whole slide image
         self._outpath = outpath  # baseline name of each tiled image
@@ -179,14 +183,16 @@ class WholeSlideTiler(object):
         self._nworkers = nworkers  # number of workers
         self._only_last = only_last
         self._dzi_data = {}
+        self._run_all = run_all
         for _i in range(nworkers):
             TileWorker(self._queue, slide_path, self._tile_size, self._overlap,
                        limit_bounds, rotate, quality).start()
 
     def run(self):
         self._run_image()
-        for name in self._slide.associated_images:
-            self._run_image(name)
+        if self._run_all:
+            for name in self._slide.associated_images:
+                self._run_image(name)
             # self._write_static()
         self._shutdown()
 

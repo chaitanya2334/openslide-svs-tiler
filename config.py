@@ -15,7 +15,7 @@ IMG_FORMAT = 'png'
 
 TILE_SIZE = 224
 
-STRIDE = 112
+STRIDE = 224
 
 LIMIT_BOUNDS = True
 
@@ -23,7 +23,7 @@ QUALITY = 100
 
 NUM_WORKERS = 28
 
-ONLY_LAST = True
+ONLY_SECOND_LAST = True
 
 SAVE_REJECTED = False
 
@@ -34,11 +34,10 @@ REJECT_THRESHOLD = 200
 
 ROTATE = False
 
-MAX_WHITE_SIZE = (TILE_SIZE*TILE_SIZE)/2
+MAX_WHITE_SIZE = (TILE_SIZE * TILE_SIZE) / 2
 
-LEIDOS_TILESIZE = 4096
+RUN_ALL = False
 
-SIMPLE_THRESHOLDING = False
 
 def ver_print(string, value):
     print(string + " {0}".format(value))
